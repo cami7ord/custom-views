@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="HeatingTimeChartView">
+        <attr name="barWidth" format="dimension" />
+        <attr name="averageIntervalOn" format="dimension" />
+        <attr name="averageIntervalOff" format="dimension" />
+        <attr name="positiveBarsColor" format="color" />
+        <attr name="negativeBarsColor" format="color" />
+        <attr name="averageLineColor" format="color" />
+        <attr name="averageLineWeight" format="dimension" />
+        <attr name="zeroLineColor" format="color" />
+        <attr name="zeroLineWeight" format="dimension" />
+    </declare-styleable>
+</resources>
