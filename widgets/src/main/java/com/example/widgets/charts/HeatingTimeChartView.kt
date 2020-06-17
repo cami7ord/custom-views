@@ -2,6 +2,7 @@ package com.example.widgets.charts
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
@@ -28,7 +29,7 @@ class HeatingTimeChartView : View {
             invalidate()
         }
 
-    var scalingFactor: Float = 1.0f
+    var scalingFactor: Float = 2.0f
         set(value) {
             field = value
             invalidate()
@@ -159,28 +160,25 @@ class HeatingTimeChartView : View {
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         paint.color = ContextCompat.getColor(context, R.color.light_gray) // TODO use defaults
         paint.textSize = 50f
+        positiveBarsColor = ContextCompat.getColor(context, R.color.tado)
 
         //Order is important
         borderBottomY = measuredHeight - borderTopY - paint.textSize * 2
         lineSeparationY = borderBottomY / 3f
-        lineSeparationX = measuredWidth / chartValues.size.toFloat()
-        borderRightX = measuredWidth - paint.measureText("24h") - lineSeparationX
+        borderRightX = measuredWidth - 16f - paint.measureText("24h") - 16f
+        lineSeparationX = borderRightX / chartValues.size.plus(1)
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        //TODO son 31 espacios, dividir por 31 el ancho
-
         if (items.isNotEmpty()) {
 
             onDrawGrid(canvas)
 
-            /*onDrawLines(canvas)
+            onDrawLines(canvas)
 
-            onDrawZeroLine(canvas)
-
-            onDrawAverageLine(canvas)*/
+            onDrawAverage(canvas)
         }
 
     }
@@ -196,12 +194,11 @@ class HeatingTimeChartView : View {
         paint.strokeWidth = borderlineWeight
 
         canvas.drawRect(borderLeftX, borderTopY, borderRightX, borderBottomY, paint)
-        //canvas.drawLine(0f, zeroLineY, measuredWidth.toFloat(), zeroLineY, paint)
 
     }
 
     private fun onDrawYAxis(canvas: Canvas) {
-        var textY = 0f
+        var textY: Float
         val lastIndex = generateYaxisValues().lastIndex
         val tempW = paint.strokeWidth
         generateYaxisValues().forEachIndexed { index, i ->
@@ -230,8 +227,69 @@ class HeatingTimeChartView : View {
         val textY = measuredHeight.toFloat() - paint.textSize + (paint.textSize / 2)
         generateXaxisValues(Calendar.getInstance().time).forEach {
             canvas.drawText("$it", textX - (paint.measureText(it.toString()) / 2), textY, paint)
-            textX += lineSeparationX * 4f
+            textX += lineSeparationX * 4.8f
         }
+    }
+
+    private fun onDrawLines(canvas: Canvas) {
+        val interval = lineSeparationX//: Float = measuredWidth / (items.size + 1).toFloat()
+        var step = 0f
+
+        paint.style = Paint.Style.STROKE
+        paint.strokeCap = Paint.Cap.ROUND
+        paint.strokeWidth = barWidth
+
+        for (value in items) {
+            step += interval
+            onDrawSingleLine(step, value, canvas)
+        }
+    }
+
+    private fun onDrawSingleLine(left: Float, value: Float, canvas: Canvas) {
+
+        val top: Float
+        val bottom: Float
+
+        canvas.save()
+
+        when {
+            value > 0 -> {
+                paint.color = positiveBarsColor
+                top = borderBottomY - (borderBottomY * value) * scalingFactor
+                bottom = borderBottomY
+                canvas.clipRect(0f, 0f, measuredWidth.toFloat(), borderBottomY)
+            }
+            else -> return
+        }
+
+        canvas.scale(1f, 1f - (paint.strokeWidth / measuredHeight), 0f, borderBottomY)
+        canvas.drawLine(left, top, left, bottom, paint)
+        canvas.restore()
+
+    }
+
+    private fun onDrawAverage(canvas: Canvas) {
+
+        paint.strokeWidth = averageLineWeight
+        paint.color = averageLineColor
+        paint.style = Paint.Style.FILL
+
+        canvas.drawText("${averageReturn.toInt()}h",
+            borderRightX + lineSeparationX,
+            (borderBottomY - borderBottomY * averageReturn * scalingFactor) + (paint.textSize/2) - 6f,
+            paint
+        )
+
+        paint.style = Paint.Style.STROKE
+        paint.pathEffect = DashPathEffect(floatArrayOf(averageIntervalOn, averageIntervalOff), 0f)
+
+        canvas.drawLine(
+            borderLeftX,
+            borderBottomY - borderBottomY * averageReturn * scalingFactor,
+            borderRightX,
+            borderBottomY - borderBottomY * averageReturn * scalingFactor,
+            paint
+        )
     }
 
     companion object {
