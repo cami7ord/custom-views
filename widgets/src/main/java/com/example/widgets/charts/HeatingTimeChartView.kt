@@ -29,7 +29,7 @@ class HeatingTimeChartView : View {
             invalidate()
         }
 
-    var scalingFactor: Float = 2.0f
+    var scalingFactor: Float = 3.4f
         set(value) {
             field = value
             invalidate()
@@ -80,7 +80,7 @@ class HeatingTimeChartView : View {
             invalidate()
             requestLayout()
         }
-    var borderlineWeight: Float = 8f
+    var borderlineWeight: Float = 4f
         set(value) {
             field = value
             invalidate()
