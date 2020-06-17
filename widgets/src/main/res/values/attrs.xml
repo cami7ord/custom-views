@@ -8,7 +8,7 @@
         <attr name="negativeBarsColor" format="color" />
         <attr name="averageLineColor" format="color" />
         <attr name="averageLineWeight" format="dimension" />
-        <attr name="zeroLineColor" format="color" />
-        <attr name="zeroLineWeight" format="dimension" />
+        <attr name="borderlineColor" format="color" />
+        <attr name="borderlineWeight" format="dimension" />
     </declare-styleable>
 </resources>
