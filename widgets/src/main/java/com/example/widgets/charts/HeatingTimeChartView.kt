@@ -40,13 +40,13 @@ class HeatingTimeChartView : View {
             invalidate()
             requestLayout()
         }
-    var positiveBarsColor: Int = R.color.tado
+    var regularBarsColor: Int = R.color.tado
         set(value) {
             field = value
             invalidate()
             requestLayout()
         }
-    var negativeBarsColor: Int = R.color.light_gray
+    var specialBarsColor: Int = R.color.dark_gray
         set(value) {
             field = value
             invalidate()
@@ -103,32 +103,18 @@ class HeatingTimeChartView : View {
         initialize(attrs)
     }
 
-    constructor(
-        context: Context?,
-        attrs: AttributeSet?,
-        defStyleAttr: Int,
-        defStyleRes: Int
-    ) : super(
-        context,
-        attrs,
-        defStyleAttr,
-        defStyleRes
-    ) {
-        initialize(attrs)
-    }
-
     private fun initialize(attrs: AttributeSet?) {
         if (attrs != null) {
             val ta = context.obtainStyledAttributes(attrs, R.styleable.HeatingTimeChartView)
             try {
                 barWidth = ta.getDimension(R.styleable.HeatingTimeChartView_barWidth, barWidth)
-                positiveBarsColor = ta.getColor(
-                    R.styleable.HeatingTimeChartView_positiveBarsColor,
-                    positiveBarsColor
+                regularBarsColor = ta.getColor(
+                    R.styleable.HeatingTimeChartView_regularBarsColor,
+                    regularBarsColor
                 )
-                negativeBarsColor = ta.getColor(
-                    R.styleable.HeatingTimeChartView_negativeBarsColor,
-                    negativeBarsColor
+                specialBarsColor = ta.getColor(
+                    R.styleable.HeatingTimeChartView_specialBarsColor,
+                    specialBarsColor
                 )
                 averageLineColor =
                     ta.getColor(R.styleable.HeatingTimeChartView_averageLineColor, averageLineColor)
@@ -160,7 +146,8 @@ class HeatingTimeChartView : View {
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         paint.color = ContextCompat.getColor(context, R.color.light_gray) // TODO use defaults
         paint.textSize = 50f
-        positiveBarsColor = ContextCompat.getColor(context, R.color.tado)
+        regularBarsColor = ContextCompat.getColor(context, R.color.tado)
+        specialBarsColor = ContextCompat.getColor(context, R.color.dark_gray)
 
         //Order is important
         borderBottomY = measuredHeight - borderTopY - paint.textSize * 2
@@ -225,45 +212,47 @@ class HeatingTimeChartView : View {
     private fun onDrawXAxis(canvas: Canvas) {
         var textX = lineSeparationX
         val textY = measuredHeight.toFloat() - paint.textSize + (paint.textSize / 2)
-        generateXaxisValues(Calendar.getInstance().time).forEach {
-            canvas.drawText("$it", textX - (paint.measureText(it.toString()) / 2), textY, paint)
+        val values = generateXaxisValues(Calendar.getInstance().time)
+        values.forEachIndexed { index, i ->
+            if (index == values.lastIndex) {
+                paint.color = averageLineColor
+            }
+            canvas.drawText("$i", textX - (paint.measureText(i.toString()) / 2), textY, paint)
             textX += lineSeparationX * 4.8f
         }
     }
 
     private fun onDrawLines(canvas: Canvas) {
-        val interval = lineSeparationX//: Float = measuredWidth / (items.size + 1).toFloat()
         var step = 0f
-
         paint.style = Paint.Style.STROKE
         paint.strokeCap = Paint.Cap.ROUND
         paint.strokeWidth = barWidth
 
-        for (value in items) {
-            step += interval
+        items.forEachIndexed { index, value ->
+            step += lineSeparationX
+            if (value == 0f || index == items.lastIndex) {
+                paint.color = specialBarsColor
+            } else {
+                paint.color = regularBarsColor
+            }
             onDrawSingleLine(step, value, canvas)
         }
     }
 
     private fun onDrawSingleLine(left: Float, value: Float, canvas: Canvas) {
 
-        val top: Float
-        val bottom: Float
-
         canvas.save()
 
-        when {
-            value > 0 -> {
-                paint.color = positiveBarsColor
-                top = borderBottomY - (borderBottomY * value) * scalingFactor
-                bottom = borderBottomY
-                canvas.clipRect(0f, 0f, measuredWidth.toFloat(), borderBottomY)
-            }
-            else -> return
+        val top = when (value) {
+            0f -> borderBottomY - (borderBottomY * value + 2.5f) * scalingFactor
+            else -> borderBottomY - (borderBottomY * value) * scalingFactor
         }
+        val bottom = borderBottomY
+        canvas.clipRect(0f, 0f, measuredWidth.toFloat(), borderBottomY)
 
         canvas.scale(1f, 1f - (paint.strokeWidth / measuredHeight), 0f, borderBottomY)
         canvas.drawLine(left, top, left, bottom, paint)
+
         canvas.restore()
 
     }
@@ -274,9 +263,10 @@ class HeatingTimeChartView : View {
         paint.color = averageLineColor
         paint.style = Paint.Style.FILL
 
-        canvas.drawText("${averageReturn.toInt()}h",
+        canvas.drawText(
+            "${averageReturn.toInt()}h",
             borderRightX + lineSeparationX,
-            (borderBottomY - borderBottomY * averageReturn * scalingFactor) + (paint.textSize/2) - 6f,
+            (borderBottomY - borderBottomY * averageReturn * scalingFactor) + (paint.textSize / 2) - 6f,
             paint
         )
 

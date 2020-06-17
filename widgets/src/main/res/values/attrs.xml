@@ -4,8 +4,8 @@
         <attr name="barWidth" format="dimension" />
         <attr name="averageIntervalOn" format="dimension" />
         <attr name="averageIntervalOff" format="dimension" />
-        <attr name="positiveBarsColor" format="color" />
-        <attr name="negativeBarsColor" format="color" />
+        <attr name="regularBarsColor" format="color" />
+        <attr name="specialBarsColor" format="color" />
         <attr name="averageLineColor" format="color" />
         <attr name="averageLineWeight" format="dimension" />
         <attr name="borderlineColor" format="color" />

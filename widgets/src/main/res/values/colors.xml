@@ -4,4 +4,5 @@
     <color name="black">#000</color>
     <color name="tado">#fec023</color>
     <color name="light_gray">#D2D2D2</color>
+    <color name="dark_gray">#B9B9B9</color>
 </resources>
