@@ -171,17 +171,14 @@ class HeatingTimeChartView : View {
     }
 
     private fun onDrawGrid(canvas: Canvas) {
-
-        paint.pathEffect = null
-
         onDrawYAxis(canvas)
         onDrawXAxis(canvas)
 
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = borderlineWeight
+        paint.color = ContextCompat.getColor(context, R.color.light_gray)
 
         canvas.drawRect(borderLeftX, borderTopY, borderRightX, borderBottomY, paint)
-
     }
 
     private fun onDrawYAxis(canvas: Canvas) {
