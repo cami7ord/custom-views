@@ -18,18 +18,15 @@ class HeatingTimeChartView : View {
     private var borderRightX = 0f
     private var lineSeparationY = 0f
     private var lineSeparationX = 0f
-    private var averageReturn = chartValues.average().toFloat()
 
     private val paint = Paint()
 
-    var items: List<Float> = chartValues
+    var props: BarGraphData<*,*>? = null
         set(value) {
             field = value
-            averageReturn = value.average().toFloat()
             invalidate()
         }
-
-    var scalingFactor: Float = 3.4f
+    var maxBarValue: Float = 86400f
         set(value) {
             field = value
             invalidate()
@@ -153,19 +150,19 @@ class HeatingTimeChartView : View {
         borderBottomY = measuredHeight - borderTopY - paint.textSize * 2
         lineSeparationY = borderBottomY / 3f
         borderRightX = measuredWidth - 16f - paint.measureText("24h") - 16f
-        lineSeparationX = borderRightX / chartValues.size.plus(1)
+        lineSeparationX = borderRightX / (props?.data?.dataSet?.size?: 0) + 1
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        if (items.isNotEmpty()) {
+        if (props != null) {
 
             onDrawGrid(canvas)
 
-            onDrawLines(canvas)
+            onDrawBars(canvas)
 
-            onDrawAverage(canvas)
+            onDrawGuides(canvas)
         }
 
     }
@@ -219,30 +216,35 @@ class HeatingTimeChartView : View {
         }
     }
 
-    private fun onDrawLines(canvas: Canvas) {
+    private fun onDrawBars(canvas: Canvas) {
         var step = 0f
         paint.style = Paint.Style.STROKE
         paint.strokeCap = Paint.Cap.ROUND
         paint.strokeWidth = barWidth
 
-        items.forEachIndexed { index, value ->
+        props?.data?.dataSet?.forEachIndexed { index, value ->
             step += lineSeparationX
-            if (value == 0f || index == items.lastIndex) {
+            if (value.y == 0f) {
                 paint.color = specialBarsColor
             } else {
                 paint.color = regularBarsColor
             }
-            onDrawSingleLine(step, value, canvas)
+            onDrawSingleBar(step, value.y?.toFloat(), canvas)
         }
     }
 
-    private fun onDrawSingleLine(left: Float, value: Float, canvas: Canvas) {
+    private fun onDrawSingleBar(left: Float, value: Float?, canvas: Canvas) {
 
         canvas.save()
 
         val top = when (value) {
-            0f -> borderBottomY - (borderBottomY * value + 2.5f) * scalingFactor
-            else -> borderBottomY - (borderBottomY * value) * scalingFactor
+            0f -> borderBottomY - (2.5f)
+            null -> {
+                return
+            }
+            else -> {
+                borderBottomY - (borderBottomY * convertValue(value))
+            }
         }
         val bottom = borderBottomY
         canvas.clipRect(0f, 0f, measuredWidth.toFloat(), borderBottomY)
@@ -254,29 +256,31 @@ class HeatingTimeChartView : View {
 
     }
 
-    private fun onDrawAverage(canvas: Canvas) {
+    private fun onDrawGuides(canvas: Canvas) {
 
         paint.strokeWidth = averageLineWeight
         paint.color = averageLineColor
         paint.style = Paint.Style.FILL
 
-        canvas.drawText(
-            "${averageReturn.toInt()}h",
-            borderRightX + lineSeparationX,
-            (borderBottomY - borderBottomY * averageReturn * scalingFactor) + (paint.textSize / 2) - 6f,
-            paint
-        )
+        props?.data?.yGuides?.forEach { guide ->
+            canvas.drawText(
+                guide.label,
+                borderRightX + lineSeparationX,
+                (borderBottomY - borderBottomY * convertValue(guide.value)) + (paint.textSize / 2) - 6f,
+                paint
+            )
 
-        paint.style = Paint.Style.STROKE
-        paint.pathEffect = DashPathEffect(floatArrayOf(averageIntervalOn, averageIntervalOff), 0f)
+            paint.style = Paint.Style.STROKE
+            paint.pathEffect = DashPathEffect(floatArrayOf(averageIntervalOn, averageIntervalOff), 0f)
 
-        canvas.drawLine(
-            borderLeftX,
-            borderBottomY - borderBottomY * averageReturn * scalingFactor,
-            borderRightX,
-            borderBottomY - borderBottomY * averageReturn * scalingFactor,
-            paint
-        )
+            canvas.drawLine(
+                borderLeftX,
+                borderBottomY - borderBottomY * convertValue(guide.value),
+                borderRightX,
+                borderBottomY - borderBottomY * convertValue(guide.value),
+                paint
+            )
+        }
     }
 
     companion object {
@@ -302,39 +306,10 @@ class HeatingTimeChartView : View {
             8,
             0
         )
+    }
 
-        val chartValues = listOf(
-            19.53f,
-            26.38f,
-            8.99f,
-            3f,
-            13.62f,
-            3.53f,
-            23.45f,
-            12.78f,
-            0f,
-            13.41f,
-            19.53f,
-            26.38f,
-            8.99f,
-            3f,
-            13.62f,
-            3.53f,
-            23.45f,
-            12.78f,
-            0f,
-            13.41f,
-            19.53f,
-            26.38f,
-            8.99f,
-            3f,
-            13.62f,
-            3.53f,
-            23.45f,
-            12.78f,
-            0f,
-            13.41f
-        ).map { x -> x / 100 }
+    private fun <YValue: Number> convertValue(value: YValue) : Float {
+        return ((value.toFloat() * 100)/maxBarValue) / 100
     }
 
 }
