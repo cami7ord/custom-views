@@ -202,16 +202,22 @@ class HeatingTimeChartView : View {
         val textY = measuredHeight.toFloat() - paint.textSize + (paint.textSize / 2)
         val values = props?.style?.xGridValues?.invoke() ?: emptyList()
         val xSeparation = if (values.isNotEmpty()) {
-            borderRightX / values.size
+            (borderRightX / (values.size - 1))
         } else {
             0f
         }
         values.forEachIndexed { index, i ->
+            textX = when(index) {
+                0 -> lineSeparationX
+                values.lastIndex ->  borderRightX-lineSeparationX
+                else -> {
+                    xSeparation * index
+                }
+            }
             if (index == values.lastIndex) {
                 paint.color = averageLineColor
             }
             canvas.drawText(i, textX - (paint.measureText(i) / 2), textY, paint)
-            textX += xSeparation
         }
     }
 

@@ -21,9 +21,9 @@ class MainActivity : AppCompatActivity() {
             RunningTime(44012, "2020-05-27 00:00:00", "2020-05-28 00:00:00"),
             RunningTime(1958, "2020-05-28 00:00:00", "2020-05-29 00:00:00"),
             RunningTime(20496, "2020-05-29 00:00:00", "2020-05-30 00:00:00"),
-            RunningTime(420, "2020-06-06 00:00:00", "2020-06-07 00:00:00"),
+            RunningTime(420, "2020-06-06 00:00:00", "2020-06-07 00:00:00")/*,
             RunningTime(450, "2020-06-07 00:00:00", "2020-06-08 00:00:00"),
-            RunningTime(500, "2020-06-08 00:00:00", "2020-06-09 00:00:00")
+            RunningTime(500, "2020-06-08 00:00:00", "2020-06-09 00:00:00")*/
         ).map {
             BarGraphData.DataSetEntry<RunningTime, Int> (it, it.runningTimeInSeconds)
         }
@@ -51,9 +51,10 @@ class MainActivity : AppCompatActivity() {
                 ),
                 xGridValues = {
                     val xValues = mutableListOf<String>()
-                    data?.dataSet?.forEachIndexed { index, dataSetEntry ->
-                        if(index % 5 == 0) {
-                            dataSetEntry.x.labelize()?.let { xValues.add(it) }
+                    val dataSize = data?.dataSet?.size ?: 0
+                    for(i in 0..dataSize) {
+                        if (i % 5 == 0) {
+                            data?.dataSet?.get(i)?.x?.labelize()?.let { xValues.add(it) }
                         }
                     }
                     xValues
