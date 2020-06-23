@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
             data = Data(
                 dataSet = list,
                 yGuides = guides.map {
-                    YGuide(it.meanInSecondsPerDay, "${it.meanInSecondsPerDay}h")
+                    YGuide(it.meanInSecondsPerDay, "${it.meanInSecondsPerDay/3600}h")
                 }
             )
         }

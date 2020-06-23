@@ -17,6 +17,7 @@ class HeatingTimeChartView : View {
     private var borderRightX = 0f
     private var lineSeparationY = 0f
     private var lineSeparationX = 0f
+    private var borderPadding = 0f
 
     private val paint = Paint()
 
@@ -141,9 +142,10 @@ class HeatingTimeChartView : View {
         specialBarsColor = ContextCompat.getColor(context, R.color.dark_gray)
 
         //Order is important
+        borderPadding = resources.getDimension(R.dimen.margin_half)
         borderBottomY = measuredHeight - borderTopY - paint.textSize * 2
         lineSeparationY = (borderBottomY / ((props?.style?.yGridLines?.size ?: 1) - 1))
-        borderRightX = measuredWidth - 16f - paint.measureText(props?.style?.yGridLines?.get(0)?.label) - 16f
+        borderRightX = measuredWidth - paint.measureText(props?.style?.yGridLines?.get(0)?.label) - borderPadding
         lineSeparationX = (borderRightX / ((props?.data?.dataSet?.size ?: 0) + 1))
     }
 
@@ -193,13 +195,13 @@ class HeatingTimeChartView : View {
                 }
             }
             paint.strokeWidth = tempW
-            canvas.drawText(i.label ?: "", borderRightX, textY, paint)
+            canvas.drawText(i.label ?: "", borderRightX + borderPadding, textY, paint)
         }
     }
 
     private fun onDrawXAxis(canvas: Canvas) {
-        var textX = lineSeparationX
-        val textY = measuredHeight.toFloat() - paint.textSize + (paint.textSize / 2)
+        var textX: Float
+        val textY = measuredHeight.toFloat() - paint.textSize + borderPadding
         val values = props?.style?.xGridValues?.invoke() ?: emptyList()
         val xSeparation = if (values.isNotEmpty()) {
             (borderRightX / (values.size - 1))
@@ -270,7 +272,7 @@ class HeatingTimeChartView : View {
         props?.data?.yGuides?.forEach { guide ->
             canvas.drawText(
                 guide.label,
-                borderRightX + lineSeparationX,
+                borderRightX + borderPadding,
                 (borderBottomY - borderBottomY * convertValueToBarHeight(guide.value)) + (paint.textSize / 2) - 6f,
                 paint
             )
