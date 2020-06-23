@@ -216,9 +216,7 @@ class HeatingTimeChartView : View {
                     xSeparation * index
                 }
             }
-            if (index == values.lastIndex) {
-                paint.color = averageLineColor
-            }
+            paint.color = props?.style?.xValueStyleModifier?.invoke(index)?.textColor ?: averageLineColor
             canvas.drawText(i, textX - (paint.measureText(i) / 2), textY, paint)
         }
     }
@@ -231,11 +229,7 @@ class HeatingTimeChartView : View {
 
         props?.data?.dataSet?.forEachIndexed { index, value ->
             step += lineSeparationX
-            if (value.y == 0f) {
-                paint.color = specialBarsColor
-            } else {
-                paint.color = regularBarsColor
-            }
+            paint.color = props?.style?.barStyleModifier?.invoke(index)?.color ?: regularBarsColor
             onDrawSingleBar(step, value.y?.toFloat(), canvas)
         }
     }

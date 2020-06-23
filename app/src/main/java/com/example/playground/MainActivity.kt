@@ -2,6 +2,7 @@ package com.example.playground
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.core.content.ContextCompat
 import com.example.widgets.charts.BarGraphData
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -14,14 +15,14 @@ class MainActivity : AppCompatActivity() {
             RunningTime(83846, "2020-05-20 00:00:00", "2020-05-21 00:00:00"),
             RunningTime(66548, "2020-05-21 00:00:00", "2020-05-22 00:00:00"),
             RunningTime(81831, "2020-05-22 00:00:00", "2020-05-23 00:00:00"),
-            RunningTime(76837, "2020-05-23 00:00:00", "2020-05-24 00:00:00"),
+            RunningTime(0, "2020-05-23 00:00:00", "2020-05-24 00:00:00"),
             RunningTime(9793, "2020-05-24 00:00:00", "2020-05-25 00:00:00"),
             RunningTime(71826, "2020-05-25 00:00:00", "2020-05-26 00:00:00"),
             RunningTime(61046, "2020-05-26 00:00:00", "2020-05-27 00:00:00"),
-            RunningTime(44012, "2020-05-27 00:00:00", "2020-05-28 00:00:00"),
+            RunningTime(0, "2020-05-27 00:00:00", "2020-05-28 00:00:00"),
             RunningTime(1958, "2020-05-28 00:00:00", "2020-05-29 00:00:00"),
             RunningTime(20496, "2020-05-29 00:00:00", "2020-05-30 00:00:00"),
-            RunningTime(420, "2020-06-06 00:00:00", "2020-06-07 00:00:00")/*,
+            RunningTime(4200, "2020-06-06 00:00:00", "2020-06-07 00:00:00")/*,
             RunningTime(450, "2020-06-07 00:00:00", "2020-06-08 00:00:00"),
             RunningTime(500, "2020-06-08 00:00:00", "2020-06-09 00:00:00")*/
         ).map {
@@ -58,6 +59,28 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                     xValues
+                },
+                xValueStyleModifier = { index:Int ->
+                    if (index == style?.xGridValues?.invoke()?.lastIndex) {
+                        BarGraphData.XValueStyle(
+                            ContextCompat.getColor(this@MainActivity, R.color.black),
+                            true)
+                    } else {
+                        BarGraphData.XValueStyle(
+                            ContextCompat.getColor(this@MainActivity, R.color.light_gray),
+                            false)
+                    }
+                },
+                barStyleModifier =  { index:Int ->
+                    val color = when(index) {
+                        data?.dataSet?.lastIndex -> R.color.dark_gray
+                        else -> if (data?.dataSet?.get(index)?.y == 0) {
+                            R.color.dark_gray
+                        } else {
+                            R.color.tado
+                        }
+                    }
+                    BarGraphData.BarStyle(ContextCompat.getColor(this@MainActivity, color))
                 }
             )
 
