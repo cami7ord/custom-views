@@ -8,7 +8,6 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.example.widgets.R
-import java.util.*
 
 class HeatingTimeChartView : View {
 
@@ -21,12 +20,7 @@ class HeatingTimeChartView : View {
 
     private val paint = Paint()
 
-    var props: BarGraphData<*,*>? = null
-        set(value) {
-            field = value
-            invalidate()
-        }
-    var maxBarValue: Float = 86400f
+    var props: BarGraphData<*, *>? = null
         set(value) {
             field = value
             invalidate()
@@ -148,9 +142,9 @@ class HeatingTimeChartView : View {
 
         //Order is important
         borderBottomY = measuredHeight - borderTopY - paint.textSize * 2
-        lineSeparationY = borderBottomY / 3f
-        borderRightX = measuredWidth - 16f - paint.measureText("24h") - 16f
-        lineSeparationX = borderRightX / (props?.data?.dataSet?.size?: 0) + 1
+        lineSeparationY = (borderBottomY / ((props?.style?.yGridLines?.size ?: 1) - 1))
+        borderRightX = measuredWidth - 16f - paint.measureText(props?.style?.yGridLines?.get(0)?.label) - 16f
+        lineSeparationX = (borderRightX / ((props?.data?.dataSet?.size ?: 0) + 1))
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -180,18 +174,18 @@ class HeatingTimeChartView : View {
 
     private fun onDrawYAxis(canvas: Canvas) {
         var textY: Float
-        val lastIndex = generateYaxisValues().lastIndex
+        val lastIndex = props?.style?.yGridLines?.lastIndex ?: 0
         val tempW = paint.strokeWidth
-        generateYaxisValues().forEachIndexed { index, i ->
+        props?.style?.yGridLines?.forEachIndexed { index, i ->
             textY = when (index) {
                 0 -> paint.textSize
                 lastIndex -> borderBottomY
                 else -> {
                     paint.strokeWidth = borderlineWeight
                     canvas.drawLine(
-                        borderRightX,
-                        lineSeparationY * index,
                         borderLeftX,
+                        lineSeparationY * index,
+                        borderRightX,
                         lineSeparationY * index,
                         paint
                     )
@@ -199,20 +193,25 @@ class HeatingTimeChartView : View {
                 }
             }
             paint.strokeWidth = tempW
-            canvas.drawText("${i}h", borderRightX + lineSeparationX, textY, paint)
+            canvas.drawText(i.label ?: "", borderRightX, textY, paint)
         }
     }
 
     private fun onDrawXAxis(canvas: Canvas) {
         var textX = lineSeparationX
         val textY = measuredHeight.toFloat() - paint.textSize + (paint.textSize / 2)
-        val values = generateXaxisValues(Calendar.getInstance().time)
+        val values = props?.style?.xGridValues?.invoke() ?: emptyList()
+        val xSeparation = if (values.isNotEmpty()) {
+            borderRightX / values.size
+        } else {
+            0f
+        }
         values.forEachIndexed { index, i ->
             if (index == values.lastIndex) {
                 paint.color = averageLineColor
             }
-            canvas.drawText("$i", textX - (paint.measureText(i.toString()) / 2), textY, paint)
-            textX += lineSeparationX * 4.8f
+            canvas.drawText(i, textX - (paint.measureText(i) / 2), textY, paint)
+            textX += xSeparation
         }
     }
 
@@ -243,7 +242,7 @@ class HeatingTimeChartView : View {
                 return
             }
             else -> {
-                borderBottomY - (borderBottomY * convertValue(value))
+                borderBottomY - (borderBottomY * convertValueToBarHeight(value))
             }
         }
         val bottom = borderBottomY
@@ -266,50 +265,27 @@ class HeatingTimeChartView : View {
             canvas.drawText(
                 guide.label,
                 borderRightX + lineSeparationX,
-                (borderBottomY - borderBottomY * convertValue(guide.value)) + (paint.textSize / 2) - 6f,
+                (borderBottomY - borderBottomY * convertValueToBarHeight(guide.value)) + (paint.textSize / 2) - 6f,
                 paint
             )
 
             paint.style = Paint.Style.STROKE
-            paint.pathEffect = DashPathEffect(floatArrayOf(averageIntervalOn, averageIntervalOff), 0f)
+            paint.pathEffect =
+                DashPathEffect(floatArrayOf(averageIntervalOn, averageIntervalOff), 0f)
 
             canvas.drawLine(
                 borderLeftX,
-                borderBottomY - borderBottomY * convertValue(guide.value),
+                borderBottomY - borderBottomY * convertValueToBarHeight(guide.value),
                 borderRightX,
-                borderBottomY - borderBottomY * convertValue(guide.value),
+                borderBottomY - borderBottomY * convertValueToBarHeight(guide.value),
                 paint
             )
         }
     }
 
-    companion object {
-
-        fun generateYaxisValues(): IntArray {
-            return yAxisValues
-        }
-
-        fun generateXaxisValues(date: Date): IntArray {
-            val results = IntArray(7)
-            val calendar = Calendar.getInstance()
-            calendar.time = date
-            for (i in 6.downTo(0)) {
-                results[i] = calendar.get(Calendar.DAY_OF_MONTH)
-                calendar.add(Calendar.DAY_OF_MONTH, -5)
-            }
-            return results
-        }
-
-        private val yAxisValues = intArrayOf(
-            24,
-            16,
-            8,
-            0
-        )
-    }
-
-    private fun <YValue: Number> convertValue(value: YValue) : Float {
-        return ((value.toFloat() * 100)/maxBarValue) / 100
+    private fun <YValue : Number> convertValueToBarHeight(value: YValue): Float {
+        val maxBarValue: Float = props?.style?.yAxis?.max?.toFloat() ?: 1f
+        return ((value.toFloat() * 100) / maxBarValue) / 100
     }
 
 }

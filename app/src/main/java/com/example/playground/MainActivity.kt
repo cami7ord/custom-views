@@ -40,6 +40,26 @@ class MainActivity : AppCompatActivity() {
         )
 
         chart.props = BarGraphData<RunningTime, Int>().apply {
+
+            style = Style(
+                yAxis = YAxis(0, 86400), // seconds in day
+                yGridLines = listOf(
+                    YGridLine(24, "24h"),
+                    YGridLine(16, "16h"),
+                    YGridLine(8, "8h"),
+                    YGridLine(0, "0h")
+                ),
+                xGridValues = {
+                    val xValues = mutableListOf<String>()
+                    data?.dataSet?.forEachIndexed { index, dataSetEntry ->
+                        if(index % 5 == 0) {
+                            dataSetEntry.x.labelize()?.let { xValues.add(it) }
+                        }
+                    }
+                    xValues
+                }
+            )
+
             data = Data(
                 dataSet = list,
                 yGuides = guides.map {
