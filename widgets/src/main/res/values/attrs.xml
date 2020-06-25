@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="HeatingTimeChartView">
+    <declare-styleable name="BarChartView">
         <attr name="barWidth" format="dimension" />
         <attr name="averageIntervalOn" format="dimension" />
         <attr name="averageIntervalOff" format="dimension" />

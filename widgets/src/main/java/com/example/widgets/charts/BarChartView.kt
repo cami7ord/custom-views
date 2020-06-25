@@ -9,7 +9,7 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import com.example.widgets.R
 
-class HeatingTimeChartView : View {
+class BarChartView : View {
 
     private var borderTopY = 8f
     private var borderLeftX = 8f
@@ -96,35 +96,35 @@ class HeatingTimeChartView : View {
 
     private fun initialize(attrs: AttributeSet?) {
         if (attrs != null) {
-            val ta = context.obtainStyledAttributes(attrs, R.styleable.HeatingTimeChartView)
+            val ta = context.obtainStyledAttributes(attrs, R.styleable.BarChartView)
             try {
-                barWidth = ta.getDimension(R.styleable.HeatingTimeChartView_barWidth, barWidth)
+                barWidth = ta.getDimension(R.styleable.BarChartView_barWidth, barWidth)
                 regularBarsColor = ta.getColor(
-                    R.styleable.HeatingTimeChartView_regularBarsColor,
+                    R.styleable.BarChartView_regularBarsColor,
                     regularBarsColor
                 )
                 specialBarsColor = ta.getColor(
-                    R.styleable.HeatingTimeChartView_specialBarsColor,
+                    R.styleable.BarChartView_specialBarsColor,
                     specialBarsColor
                 )
                 guideLineColor =
-                    ta.getColor(R.styleable.HeatingTimeChartView_averageLineColor, guideLineColor)
+                    ta.getColor(R.styleable.BarChartView_averageLineColor, guideLineColor)
                 borderlineColor =
-                    ta.getColor(R.styleable.HeatingTimeChartView_borderlineColor, borderlineColor)
+                    ta.getColor(R.styleable.BarChartView_borderlineColor, borderlineColor)
                 borderlineWeight = ta.getDimension(
-                    R.styleable.HeatingTimeChartView_borderlineWeight,
+                    R.styleable.BarChartView_borderlineWeight,
                     borderlineWeight
                 )
                 guideLineWeight = ta.getDimension(
-                    R.styleable.HeatingTimeChartView_averageLineWeight,
+                    R.styleable.BarChartView_averageLineWeight,
                     guideLineWeight
                 )
                 guideIntervalOn = ta.getDimension(
-                    R.styleable.HeatingTimeChartView_averageIntervalOn,
+                    R.styleable.BarChartView_averageIntervalOn,
                     guideIntervalOn
                 )
                 guideIntervalOff = ta.getDimension(
-                    R.styleable.HeatingTimeChartView_averageIntervalOff,
+                    R.styleable.BarChartView_averageIntervalOff,
                     guideIntervalOff
                 )
             } finally {
