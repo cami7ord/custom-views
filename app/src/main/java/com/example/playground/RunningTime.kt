@@ -1,6 +1,6 @@
 package com.example.playground
 
-import com.example.widgets.charts.BarGraphData.Labelizable
+import com.example.widgets.charts.BarChartData.Labelizable
 
 class Response(
     val runningTimes: List<RunningTime>,

@@ -20,7 +20,7 @@ class BarChartView : View {
 
     private val paint = Paint()
 
-    var props: BarGraphData<*, *>? = null
+    var props: BarChartData<*, *>? = null
         set(value) {
             field = value
             invalidate()
@@ -211,10 +211,11 @@ class BarChartView : View {
                     xSeparation * index
                 }
             }
-            val xStyle = props?.style?.xValueStyleModifier?.invoke(index)
+            val xStyle = props?.style?.xValueStyleModifier?.invoke(index, index)
             paint.color = xStyle?.textColor ?: guideLineColor
             paint.isFakeBoldText = xStyle?.boldText ?: false
             canvas.drawText(i, textX - (paint.measureText(i) / 2), textY, paint)
+            paint.isFakeBoldText = false
         }
     }
 
@@ -226,7 +227,7 @@ class BarChartView : View {
 
         props?.data?.dataSet?.forEachIndexed { index, value ->
             step += lineSeparationX
-            paint.color = props?.style?.barStyleModifier?.invoke(index)?.color ?: regularBarsColor
+            paint.color = props?.style?.barStyleModifier?.invoke(index, index)?.color ?: regularBarsColor
             onDrawSingleBar(step, value.y?.toFloat(), canvas)
         }
     }
@@ -260,6 +261,7 @@ class BarChartView : View {
         paint.color = guideLineColor
         paint.style = Paint.Style.FILL
 
+        paint.isFakeBoldText = true
         props?.data?.yGuides?.forEach { guide ->
             canvas.drawText(
                 guide.label,
@@ -280,6 +282,7 @@ class BarChartView : View {
                 paint
             )
         }
+        paint.isFakeBoldText = false
     }
 
     private fun <YValue : Number> convertValueToHeight(value: YValue): Float {

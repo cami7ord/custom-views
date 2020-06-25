@@ -1,6 +1,6 @@
 package com.example.widgets.charts
 
-class BarGraphData<XValue: BarGraphData.Labelizable, YValue : Number> {
+class BarChartData<XValue: BarChartData.Labelizable, YValue : Number> {
 
     var style: Style? = null
     var data: Data? = null
@@ -10,8 +10,8 @@ class BarGraphData<XValue: BarGraphData.Labelizable, YValue : Number> {
         val yAxis: YAxis, // Fixed configuration for Y axis
         val yGridLines: List<YGridLine>, // Fixed list of horizontal grid lines
         val xGridValues: () -> List<String>,
-        val xValueStyleModifier: (index: Int) -> XValueStyle, // Custom style modifier
-        val barStyleModifier: (index: Int) -> BarStyle // Custom style modifier
+        val xValueStyleModifier: (index: Int, count: Int) -> XValueStyle, // Custom style modifier
+        val barStyleModifier: (index: Int, count: Int) -> BarStyle // Custom style modifier
     )
 
     inner class YAxis( // Options for Y axis - range
