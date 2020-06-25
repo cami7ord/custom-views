@@ -45,10 +45,10 @@ class MainActivity : AppCompatActivity() {
             style = Style(
                 yAxis = YAxis(0, 86400), // seconds in day
                 yGridLines = listOf(
-                    YGridLine(24, "24h"),
-                    YGridLine(16, "16h"),
-                    YGridLine(8, "8h"),
-                    YGridLine(0, "0h")
+                    YGridLine(24 * 3600, "24h"),
+                    YGridLine(16 * 3600, "16h"),
+                    YGridLine(8 * 3600, "8h"),
+                    YGridLine(0 * 3600, "0h")
                 ),
                 xGridValues = {
                     val xValues = mutableListOf<String>()
@@ -63,12 +63,12 @@ class MainActivity : AppCompatActivity() {
                 xValueStyleModifier = { index:Int ->
                     if (index == style?.xGridValues?.invoke()?.lastIndex) {
                         BarGraphData.XValueStyle(
-                            ContextCompat.getColor(this@MainActivity, R.color.black),
-                            true)
+                            textColor = ContextCompat.getColor(this@MainActivity, R.color.black),
+                            boldText = true)
                     } else {
                         BarGraphData.XValueStyle(
-                            ContextCompat.getColor(this@MainActivity, R.color.light_gray),
-                            false)
+                            textColor = ContextCompat.getColor(this@MainActivity, R.color.light_gray),
+                            boldText = false)
                     }
                 },
                 barStyleModifier =  { index:Int ->

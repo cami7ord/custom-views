@@ -15,7 +15,6 @@ class HeatingTimeChartView : View {
     private var borderLeftX = 8f
     private var borderBottomY = 0f
     private var borderRightX = 0f
-    private var lineSeparationY = 0f
     private var lineSeparationX = 0f
     private var borderPadding = 0f
 
@@ -44,24 +43,24 @@ class HeatingTimeChartView : View {
             invalidate()
             requestLayout()
         }
-    var averageLineColor: Int = R.color.black
+    var guideLineColor: Int = R.color.tado
         set(value) {
             field = value
             invalidate()
             requestLayout()
         }
-    var averageLineWeight: Float = 4f
+    var guideLineWeight: Float = 4f
         set(value) {
             field = value
             invalidate()
             requestLayout()
         }
-    var averageIntervalOn: Float = 14f
+    var guideIntervalOn: Float = 14f
         set(value) {
             field = value
             invalidate()
         }
-    var averageIntervalOff: Float = 8f
+    var guideIntervalOff: Float = 8f
         set(value) {
             field = value
             invalidate()
@@ -108,43 +107,38 @@ class HeatingTimeChartView : View {
                     R.styleable.HeatingTimeChartView_specialBarsColor,
                     specialBarsColor
                 )
-                averageLineColor =
-                    ta.getColor(R.styleable.HeatingTimeChartView_averageLineColor, averageLineColor)
+                guideLineColor =
+                    ta.getColor(R.styleable.HeatingTimeChartView_averageLineColor, guideLineColor)
                 borderlineColor =
                     ta.getColor(R.styleable.HeatingTimeChartView_borderlineColor, borderlineColor)
                 borderlineWeight = ta.getDimension(
                     R.styleable.HeatingTimeChartView_borderlineWeight,
                     borderlineWeight
                 )
-                averageLineWeight = ta.getDimension(
+                guideLineWeight = ta.getDimension(
                     R.styleable.HeatingTimeChartView_averageLineWeight,
-                    averageLineWeight
+                    guideLineWeight
                 )
-                averageIntervalOn = ta.getDimension(
+                guideIntervalOn = ta.getDimension(
                     R.styleable.HeatingTimeChartView_averageIntervalOn,
-                    averageIntervalOn
+                    guideIntervalOn
                 )
-                averageIntervalOff = ta.getDimension(
+                guideIntervalOff = ta.getDimension(
                     R.styleable.HeatingTimeChartView_averageIntervalOff,
-                    averageIntervalOff
+                    guideIntervalOff
                 )
             } finally {
                 ta.recycle()
             }
         }
-        setLayerType(LAYER_TYPE_SOFTWARE, null)
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        paint.color = ContextCompat.getColor(context, R.color.light_gray) // TODO use defaults
-        paint.textSize = 50f
-        regularBarsColor = ContextCompat.getColor(context, R.color.tado)
-        specialBarsColor = ContextCompat.getColor(context, R.color.dark_gray)
-
-        //Order is important
+        paint.color = ContextCompat.getColor(context, R.color.light_gray)
+        guideLineColor = ContextCompat.getColor(context, R.color.black)
+        paint.textSize = resources.getDimension(R.dimen.text_normal)
         borderPadding = resources.getDimension(R.dimen.margin_half)
         borderBottomY = measuredHeight - borderTopY - paint.textSize * 2
-        lineSeparationY = (borderBottomY / ((props?.style?.yGridLines?.size ?: 1) - 1))
         borderRightX = measuredWidth - paint.measureText(props?.style?.yGridLines?.get(0)?.label) - borderPadding
         lineSeparationX = (borderRightX / ((props?.data?.dataSet?.size ?: 0) + 1))
     }
@@ -184,14 +178,15 @@ class HeatingTimeChartView : View {
                 lastIndex -> borderBottomY
                 else -> {
                     paint.strokeWidth = borderlineWeight
+                    val h = borderBottomY - borderBottomY * convertValueToHeight(i.value)
                     canvas.drawLine(
                         borderLeftX,
-                        lineSeparationY * index,
+                        h,
                         borderRightX,
-                        lineSeparationY * index,
+                        h,
                         paint
                     )
-                    (lineSeparationY * index) + (paint.textSize / 2)
+                    h + (paint.textSize / 2)
                 }
             }
             paint.strokeWidth = tempW
@@ -216,7 +211,9 @@ class HeatingTimeChartView : View {
                     xSeparation * index
                 }
             }
-            paint.color = props?.style?.xValueStyleModifier?.invoke(index)?.textColor ?: averageLineColor
+            val xStyle = props?.style?.xValueStyleModifier?.invoke(index)
+            paint.color = xStyle?.textColor ?: guideLineColor
+            paint.isFakeBoldText = xStyle?.boldText ?: false
             canvas.drawText(i, textX - (paint.measureText(i) / 2), textY, paint)
         }
     }
@@ -244,7 +241,7 @@ class HeatingTimeChartView : View {
                 return
             }
             else -> {
-                borderBottomY - (borderBottomY * convertValueToBarHeight(value))
+                borderBottomY - (borderBottomY * convertValueToHeight(value))
             }
         }
         val bottom = borderBottomY
@@ -259,33 +256,33 @@ class HeatingTimeChartView : View {
 
     private fun onDrawGuides(canvas: Canvas) {
 
-        paint.strokeWidth = averageLineWeight
-        paint.color = averageLineColor
+        paint.strokeWidth = guideLineWeight
+        paint.color = guideLineColor
         paint.style = Paint.Style.FILL
 
         props?.data?.yGuides?.forEach { guide ->
             canvas.drawText(
                 guide.label,
                 borderRightX + borderPadding,
-                (borderBottomY - borderBottomY * convertValueToBarHeight(guide.value)) + (paint.textSize / 2) - 6f,
+                (borderBottomY - borderBottomY * convertValueToHeight(guide.value)) + (paint.textSize / 2) - 6f,
                 paint
             )
 
             paint.style = Paint.Style.STROKE
             paint.pathEffect =
-                DashPathEffect(floatArrayOf(averageIntervalOn, averageIntervalOff), 0f)
+                DashPathEffect(floatArrayOf(guideIntervalOn, guideIntervalOff), 0f)
 
             canvas.drawLine(
                 borderLeftX,
-                borderBottomY - borderBottomY * convertValueToBarHeight(guide.value),
+                borderBottomY - borderBottomY * convertValueToHeight(guide.value),
                 borderRightX,
-                borderBottomY - borderBottomY * convertValueToBarHeight(guide.value),
+                borderBottomY - borderBottomY * convertValueToHeight(guide.value),
                 paint
             )
         }
     }
 
-    private fun <YValue : Number> convertValueToBarHeight(value: YValue): Float {
+    private fun <YValue : Number> convertValueToHeight(value: YValue): Float {
         val maxBarValue: Float = props?.style?.yAxis?.max?.toFloat() ?: 1f
         return ((value.toFloat() * 100) / maxBarValue) / 100
     }
